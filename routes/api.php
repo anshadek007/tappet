@@ -205,6 +205,7 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
             Route::post('user/forgot_password', 'api\v1\UserController@ForgotPassword')->name('user.forgot_password');
             Route::post('user/verify_otp', 'api\v1\UserController@verifyOTP')->name('verify.otp');
             Route::post('user/verify_email_otp', 'api\v1\UserController@verifyEmailOTP')->name('verifyemail.otp');
+            
             Route::post('user/resendotp', 'api\v1\UserController@resendOTP')->name('resend.otp');
 
             Route::post('user/login', 'api\v1\UserController@login')->name('api.login');

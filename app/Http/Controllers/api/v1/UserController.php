@@ -24,6 +24,8 @@ use App\UserCallHistory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\CorporateFollwer;
+use Exception;
+use Lcobucci\JWT\Builder;
 
 class UserController extends APIController {
 
@@ -176,6 +178,9 @@ class UserController extends APIController {
     }
 
     public function login(Request $request) {
+        try{
+            
+        
         $request->merge([
             'u_user_type' => $request->u_user_type,
             'u_email' => $request->u_email,
@@ -190,10 +195,12 @@ class UserController extends APIController {
         $u_password = $request->u_password;
         $u_social_id = $request->u_social_id;
 
+
         if (
                 ($u_user_type == 1 && (empty($u_email) || empty($u_password))) ||
                 ($u_user_type == 2 && empty($u_social_id))
         ) {
+           
             return $this->sendApiFailedLoginResponse($request);
         }
 
@@ -237,17 +244,23 @@ class UserController extends APIController {
                         ->where('user_id', $user_data->u_id)
                         ->update(['revoked' => true]);
             }
-
+            
             $this->update_device_token($user_data->u_id, $request->device_token, $request->device_type);
-
+            
             $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
-
+            
             $message = ["result" => $userdetail_data, "message" => $successMessage, "status" => true, "code" => 0];
         } else {
             $message = ["result" => (object) array(), "message" => "Invalid Email Or Password", "status" => false, "code" => 0];
         }
 
         return response()->json($message, 200);
+    }catch(Exception $e) {
+        dd($e);
+            echo 'Message: ' .$e->getMessage();
+          }
+
+    
     }
 
     public function verifyOTP(Request $request) {
@@ -288,7 +301,7 @@ class UserController extends APIController {
     }
 
     public function verifyEmailOTP(Request $request) {
-
+        
         $request->merge([
             'u_email' => $request->u_email,
             'u_otp' => $request->u_otp,
@@ -307,12 +320,12 @@ class UserController extends APIController {
 
         $user_data = array();
         $user_data = User::where('u_email', trim($u_email))->where('u_otp', $u_otp)->where('u_status', 1)->first();
-
+        
         if (!empty($user_data)) {
             $user_data->u_otp = "";
             $user_data->u_is_verified = 1;
             $user_data->update();
-
+           
             $userdetail_data = $this->get_userdata($user_data);
             $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
             $message = ["result" => $userdetail_data, "message" => "Email verified successfully.", "status" => true, "code" => 0];
