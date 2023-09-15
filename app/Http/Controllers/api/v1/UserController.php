@@ -135,7 +135,8 @@ class UserController extends APIController {
 
             if (!empty($user_data)) {
                 if ($request->u_user_type == 1) {
-                    $OTP = rand(1000, 9999);
+                    // $OTP = rand(1000, 9999);
+                    $otp = 1234;
                     $user_email = $request->u_email;
                     try {
                         $email = array($user_email);
@@ -585,7 +586,8 @@ class UserController extends APIController {
 
         if (!empty($request->u_mobile_number)) {
             if ($request->u_mobile_number != $user->u_mobile_number) {
-                $OTP = (int) rand(1000, 9999);
+                // $OTP = (int) rand(1000, 9999);
+                $OTP = 1234;
                 $user->u_otp = $OTP;
                 $user->u_phone_verified = 2;
             }
@@ -797,7 +799,8 @@ class UserController extends APIController {
 
         if (!empty($user_data)) {
 
-            $OTP = rand(1000, 9999);
+            // $OTP = rand(1000, 9999);
+            $OTP = 1234;
             $user_email = $request->u_email;
             try {
                 $email = array($user_email);
@@ -931,7 +934,8 @@ class UserController extends APIController {
         $successMessage = "Failed to send OTP";
         if (!empty($user_data)) {
             try {
-                $OTP = rand(1000, 9999);
+                // $OTP = rand(1000, 9999);
+                $OTP = 1234;
 
                 if (!empty($request->u_email)) {
                     $email = array($user_data->u_email);
