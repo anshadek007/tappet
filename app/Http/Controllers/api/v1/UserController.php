@@ -180,7 +180,7 @@ class UserController extends APIController {
 
     public function login(Request $request) {
         try{
-            
+           
         
         $request->merge([
             'u_user_type' => $request->u_user_type,
@@ -257,7 +257,7 @@ class UserController extends APIController {
 
         return response()->json($message, 200);
     }catch(Exception $e) {
-        dd($e);
+        
             echo 'Message: ' .$e->getMessage();
           }
 
