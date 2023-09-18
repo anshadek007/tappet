@@ -25,7 +25,7 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
     Route::post('password/corporate/reset', 'api\v1\CorporateResetPasswordController@reset')->name('api.password.corporate.update');
 
     // Route::group(['middleware' => ['isAppUser']], function (Router $router) {
-
+        dd('sss');
         Route::group(array('prefix' => 'v1'), function() {
             Route::post('password/email', 'api\v1\ForgotPasswordController@sendResetApiLinkEmail')->name('forgotpassword');
             Route::post('corporateuser/password/email', 'api\v1\CorporateForgotPasswordController@sendResetApiLinkEmail')->name('corporateuser.forgotpassword');
