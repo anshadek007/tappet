@@ -136,9 +136,9 @@ class UserController extends APIController {
             if (!empty($user_data)) {
                 if ($request->u_user_type == 1) {
                     // $OTP = rand(1000, 9999);
-                    $otp = 1234;
+                    $OTP = 1234;
                     $user_email = $request->u_email;
-                    try {
+                    // try {
                         $email = array($user_email);
                         $data = array(
                             'otp' => $OTP,
@@ -149,10 +149,10 @@ class UserController extends APIController {
                             $message->to($email);
                             $message->subject(config('app.name') . " : Verification mail");
                         });
-                    } catch (\Exception $e) {
-                        return $this->respondWithError($e->getMessage());
-                        //return $this->respondWithError("Failed: Problem while sending verification mail, try again!");
-                    }
+                    // } catch (\Exception $e) {
+                    //     return $this->respondWithError($e->getMessage());
+                    //     //return $this->respondWithError("Failed: Problem while sending verification mail, try again!");
+                    // }
 
                     $user_data->u_otp = $OTP;
                     $user_data->u_is_verified = 2;
