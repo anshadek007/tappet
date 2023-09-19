@@ -703,7 +703,7 @@ class UserController extends APIController {
         }
 
         $user->save();
-
+        
         $userdetail_data = $this->get_userdata($user);
         if(!empty($userdetail_data->u_image)){
             $userdetail_data->u_image = trim(str_replace('/public','',$userdetail_data->u_image));
