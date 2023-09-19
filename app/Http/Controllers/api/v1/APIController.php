@@ -57,6 +57,7 @@ class APIController extends Controller {
      * @return type
      */
     protected function respondResult($result = null, $message = "", $status = true, $code = 0) {
+       
         return array_merge(['result' => !empty($result) ? $result : (object) null], ['message' => $message, 'status' => $status, 'code' => $code]);
     }
 
@@ -71,13 +72,15 @@ class APIController extends Controller {
      * @param type $upload_folder
      */
     protected function uploadFile($file, $id, $upload_folder) {
-
+       
         if (!empty($file) && !empty($id) && is_numeric($id)) {
             $fileName = $file->getClientOriginalName();
             $fileName = rand(0000,9999)."_".time() . '.' . $file->getClientOriginalExtension();
+           
             //$fileName = time() . '_' . $this->normalizeString($fileName);
             $file_type = self::filetype($fileName);
             $filePath = upload_path($upload_folder . '/' . $id . '/');
+         
 
             if (!\File::exists($filePath)) {
                 \File::makeDirectory($filePath, 0777, true, true);
@@ -85,6 +88,7 @@ class APIController extends Controller {
 
             if ($file_type == 'image') {
                 $img = Image::make($file->getRealPath());
+              
                 //$img->resize(360, 480, function ($constraint) {
                 //$constraint->aspectRatio();
                 //});
@@ -92,6 +96,7 @@ class APIController extends Controller {
             } else {
                 $file->move($filePath, $fileName);
             }
+            
 
             return $fileName;
         }

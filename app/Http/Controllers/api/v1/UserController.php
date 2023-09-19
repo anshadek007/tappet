@@ -663,6 +663,7 @@ class UserController extends APIController {
     }
 
     public function updateProfilePicture(Request $request) {
+       
         $request->merge([
             'u_id' => $request->u_id,
         ]);
@@ -677,7 +678,7 @@ class UserController extends APIController {
             'u_id' => ['required'],
         ];
 
-        if (!empty($request->file('u_image'))) {
+    if (!empty($request->file('u_image'))) {
             $rules['u_image'] = 'required|mimes:jpeg,jpg,png|max:5098';
         }
 
@@ -693,6 +694,8 @@ class UserController extends APIController {
 
         if (!empty($request->file('u_image'))) {
             $fileName = $this->uploadFile($request->file('u_image'), $id, 'users');
+            
+         
             if (!$fileName) {
                 return $this->respondWithError("Failed to upload profile picture, Try again..!");
             }
@@ -702,7 +705,10 @@ class UserController extends APIController {
         $user->save();
 
         $userdetail_data = $this->get_userdata($user);
-
+        if(!empty($userdetail_data->u_image)){
+            $userdetail_data->u_image = trim(str_replace('/public','',$userdetail_data->u_image));
+            return $this->respondResult($userdetail_data, 'User detail updeted successfully.', true, 200);
+        }
         return $this->respondResult($userdetail_data, 'User detail updeted successfully.', true, 200);
     }
 

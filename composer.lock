@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8a4577ae3af3750f6f71be680775529c",
+    "content-hash": "dc6593d92932732a4906691285305155",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.281.4",
+            "version": "3.281.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c37035bcfb67a9d54f91dae303b3fe8f98ea59f4"
+                "reference": "9e744fd8925f7908fbc4dcea91bd785aba308587"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c37035bcfb67a9d54f91dae303b3fe8f98ea59f4",
-                "reference": "c37035bcfb67a9d54f91dae303b3fe8f98ea59f4",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9e744fd8925f7908fbc4dcea91bd785aba308587",
+                "reference": "9e744fd8925f7908fbc4dcea91bd785aba308587",
                 "shasum": ""
             },
             "require": {
@@ -151,9 +151,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.281.4"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.281.9"
             },
-            "time": "2023-09-11T18:07:49+00:00"
+            "time": "2023-09-18T18:11:01+00:00"
         },
         {
             "name": "barryvdh/laravel-debugbar",
@@ -2713,16 +2713,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.44",
+            "version": "2.0.45",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "149f608243f8133c61926aae26ce67d2b22b37e5"
+                "reference": "28d8f438a0064c9de80857e3270d071495544640"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/149f608243f8133c61926aae26ce67d2b22b37e5",
-                "reference": "149f608243f8133c61926aae26ce67d2b22b37e5",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/28d8f438a0064c9de80857e3270d071495544640",
+                "reference": "28d8f438a0064c9de80857e3270d071495544640",
                 "shasum": ""
             },
             "require": {
@@ -2803,7 +2803,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.44"
+                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.45"
             },
             "funding": [
                 {
@@ -2819,7 +2819,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-06-13T08:41:47+00:00"
+            "time": "2023-09-15T20:55:47+00:00"
         },
         {
             "name": "psr/clock",
@@ -5792,16 +5792,16 @@
         },
         {
             "name": "tymon/jwt-auth",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tymondesigns/jwt-auth.git",
-                "reference": "b927137cd5bd4d2f5d48a1ca71bc85006b99dbae"
+                "reference": "e588cb719539366c0e2f6017f975379cb73e9680"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tymondesigns/jwt-auth/zipball/b927137cd5bd4d2f5d48a1ca71bc85006b99dbae",
-                "reference": "b927137cd5bd4d2f5d48a1ca71bc85006b99dbae",
+                "url": "https://api.github.com/repos/tymondesigns/jwt-auth/zipball/e588cb719539366c0e2f6017f975379cb73e9680",
+                "reference": "e588cb719539366c0e2f6017f975379cb73e9680",
                 "shasum": ""
             },
             "require": {
@@ -5809,7 +5809,7 @@
                 "illuminate/contracts": "^5.2|^6|^7|^8",
                 "illuminate/http": "^5.2|^6|^7|^8",
                 "illuminate/support": "^5.2|^6|^7|^8",
-                "lcobucci/jwt": "^3.2",
+                "lcobucci/jwt": "<3.4",
                 "namshi/jose": "^7.0",
                 "nesbot/carbon": "^1.0|^2.0",
                 "php": "^5.5.9|^7.0"
@@ -5872,7 +5872,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2020-09-08T12:29:20+00:00"
+            "time": "2020-11-27T12:32:42+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -6932,16 +6932,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "1.24.0",
+            "version": "1.24.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "3510b0a6274cc42f7219367cb3abfc123ffa09d6"
+                "reference": "9f854d275c2dbf84915a5c0ec9a2d17d2cd86b01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/3510b0a6274cc42f7219367cb3abfc123ffa09d6",
-                "reference": "3510b0a6274cc42f7219367cb3abfc123ffa09d6",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/9f854d275c2dbf84915a5c0ec9a2d17d2cd86b01",
+                "reference": "9f854d275c2dbf84915a5c0ec9a2d17d2cd86b01",
                 "shasum": ""
             },
             "require": {
@@ -6973,9 +6973,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.24.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.24.1"
             },
-            "time": "2023-09-07T20:46:32+00:00"
+            "time": "2023-09-18T12:18:02+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
