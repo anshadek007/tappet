@@ -628,10 +628,7 @@ class UserController extends APIController {
         $user->save();
 
         $userdetail_data = $this->get_userdata($user);
-        if(!empty($userdetail_data->u_image)){
-            $userdetail_data->u_image = trim(str_replace('/public','',$userdetail_data->u_image));
-            return $this->respondResult($userdetail_data, 'User detail updeted successfully.', true, 200);
-        }
+        
         return $this->respondResult($userdetail_data, 'User details updated successfully.', true, 200);
     }
 
@@ -708,10 +705,7 @@ class UserController extends APIController {
         $user->save();
         
         $userdetail_data = $this->get_userdata($user);
-        if(!empty($userdetail_data->u_image)){
-            $userdetail_data->u_image = trim(str_replace('/public','',$userdetail_data->u_image));
-            return $this->respondResult($userdetail_data, 'User detail updeted successfully.', true, 200);
-        }
+       
         return $this->respondResult($userdetail_data, 'User detail updeted successfully.', true, 200);
     }
 
@@ -988,6 +982,7 @@ class UserController extends APIController {
     }
 
     public function get_userdata($user_data, $login_user_id = 0) {
+       
         $userdetail_data = new \stdClass();
         $userdetail_data->u_id = $user_data->u_id;
         $userdetail_data->u_first_name = !empty($user_data->u_first_name) ? $user_data->u_first_name : "";
@@ -1019,7 +1014,7 @@ class UserController extends APIController {
 
         $userdetail_data->friend_request = 0;
         $userdetail_data->friend_request_sent_by_me = false;
-
+        
         if (!empty($login_user_id)) {
             $invites = 'SELECT
                         tappet_user_friends.*

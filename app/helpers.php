@@ -229,81 +229,81 @@ if (!function_exists('getPhotoURL')) {
                 $img_folder = config('constants.UPLOAD_ADMINS_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/img/avatar/avatar-1.png');
+                    $photoURL = asset('assets/img/avatar/avatar-1.png');
                 }
                 break;
             case 'users':
                 $img_folder = config('constants.UPLOAD_USERS_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/img/avatar/avatar-1.png');
+                    $photoURL = asset('assets/img/avatar/avatar-1.png');
                 }
                 break;
             case 'categories':
                 $img_folder = config('constants.UPLOAD_CATEGORIES_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/no-image-placeholder.jpg');
+                    $photoURL = asset('assets/images/no-image-placeholder.jpg');
                 }
                 break;
             case 'countries':
                 $img_folder = config('constants.UPLOAD_COUNTRIES_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/default_flag.png');
+                    $photoURL = asset('assets/images/default_flag.png');
                 }
                 break;
             case 'pet_types':
                 $img_folder = config('constants.UPLOAD_PET_TYPES_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/no-image-placeholder.jpg');
+                    $photoURL = asset('assets/images/no-image-placeholder.jpg');
                 }
                 break;    
             case 'pets':
                 $img_folder = config('constants.UPLOAD_PETS_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/no-image-placeholder.jpg');
+                    $photoURL = asset('assets/images/no-image-placeholder.jpg');
                 }
                 break;
             case 'groups':
                 $img_folder = config('constants.UPLOAD_GROUPS_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/no-image-placeholder.jpg');
+                    $photoURL = asset('assets/images/no-image-placeholder.jpg');
                 }
                 break;
             case 'events':
                 $img_folder = config('constants.UPLOAD_EVENTS_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/no-image-placeholder.jpg');
+                    $photoURL = asset('assets/images/no-image-placeholder.jpg');
                 }
                 break;
             case 'posts':
                 $img_folder = config('constants.UPLOAD_POSTS_FOLDER');
                 $img_path = public_path("uploads/" . $img_folder . "/" . $id . "/" . $photoName);
                 if (!empty($id) && !empty($photoName) && file_exists($img_path)) {
-                    $photoURL = asset('public/uploads/' . $img_folder . '/' . $id . '/' . $photoName);
+                    $photoURL = asset('uploads/' . $img_folder . '/' . $id . '/' . $photoName);
                 } else {
-                    $photoURL = asset('public/assets/images/no-image-placeholder.jpg');
+                    $photoURL = asset('assets/images/no-image-placeholder.jpg');
                 }
                 break;
             case 'advertisements':

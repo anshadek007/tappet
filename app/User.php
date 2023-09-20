@@ -348,11 +348,12 @@ class User extends Authenticatable {
     }
 
     public function getUImageAttribute() {
+       
         $link = '';
         if (!empty($this->attributes['u_image'])) {
             $link = getPhotoURL(config('constants.UPLOAD_USERS_FOLDER'), $this->attributes['u_id'], $this->attributes['u_image']);
         } else {
-            $link = url('/public/assets/images/' . config("constants.DEFAULT_PLACEHOLDER_IMAGE"));
+            $link = url('/assets/images/' . config("constants.DEFAULT_PLACEHOLDER_IMAGE"));
         }
         return $link;
     }
