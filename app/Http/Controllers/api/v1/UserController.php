@@ -135,8 +135,8 @@ class UserController extends APIController {
 
             if (!empty($user_data)) {
                 if ($request->u_user_type == 1) {
-                    // $OTP = rand(1000, 9999);
-                    $OTP = 1234;
+                    $OTP = rand(1000, 9999);
+                   
                     $user_email = $request->u_email;
                     // try {
                         $email = array($user_email);
