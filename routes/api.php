@@ -24,14 +24,18 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
     Route::post('password/reset', 'api\v1\ResetPasswordController@reset')->name('api.password.update');
     Route::post('password/corporate/reset', 'api\v1\CorporateResetPasswordController@reset')->name('api.password.corporate.update');
 
+    
+  
+
     // Route::group(['middleware' => ['isAppUser']], function (Router $router) {
        
         Route::group(array('prefix' => 'v1'), function() {
             Route::post('password/email', 'api\v1\ForgotPasswordController@sendResetApiLinkEmail')->name('forgotpassword');
             Route::post('corporateuser/password/email', 'api\v1\CorporateForgotPasswordController@sendResetApiLinkEmail')->name('corporateuser.forgotpassword');
+            //public pet details 
+            Route::get('pets/get_pet_details_public/{pet_id}', 'api\v1\PetsController@get_pet_details_for_public')->name('public.pets.get_pet_details');
             // user route
             Route::middleware('auth:api')->group(function () {
-
                 //User routes
                 Route::resource('user', 'api\v1\UserController');
                 Route::post('updateuserdetail', 'api\v1\UserController@updateUserDetail')->name('update.userdetail');
