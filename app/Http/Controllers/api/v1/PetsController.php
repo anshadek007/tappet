@@ -18,12 +18,13 @@ use App\PetActivityLocations;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Validator;
-use App\Traits\PushNotifications;
+use App\Traits\ConversationIdGenerator;
 use App\Notification;
 use App\UserDeviceToken;
 
-class PetsController extends APIController {
 
+class PetsController extends APIController {
+    use ConversationIdGenerator;
     protected $userModel;
     protected $week_list;
 
@@ -1500,7 +1501,9 @@ class PetsController extends APIController {
 
 
     public function get_pet_details_for_public(Request $request) {
+
         try {
+           
             $find_record = Pets::find($request->pet_id);
 
             if (!$find_record) {
