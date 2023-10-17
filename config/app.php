@@ -156,6 +156,7 @@ return [
         Barryvdh\Debugbar\ServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
         App\Providers\CustomPasswordResetServiceProvider::class,
+        Barryvdh\Cors\ServiceProvider::class,
 
     ],
     /*

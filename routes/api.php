@@ -32,8 +32,10 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
         Route::group(array('prefix' => 'v1'), function() {
             Route::post('password/email', 'api\v1\ForgotPasswordController@sendResetApiLinkEmail')->name('forgotpassword');
             Route::post('corporateuser/password/email', 'api\v1\CorporateForgotPasswordController@sendResetApiLinkEmail')->name('corporateuser.forgotpassword');
+            Route::middleware(['cors'])->group(function () {
             //public pet details 
             Route::get('pets/get_pet_details_public/{pet_id}', 'api\v1\PetsController@get_pet_details_for_public')->name('public.pets.get_pet_details');
+            });
             // user route
             Route::middleware('auth:api')->group(function () {
                 //User routes

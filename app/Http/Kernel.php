@@ -62,6 +62,7 @@ class Kernel extends HttpKernel {
         'checkmodulepermission' => \App\Http\Middleware\CheckModulePermission::class,
         'isAppUser' => \App\Http\Middleware\IsAppUser::class,
         'apiDataLogger' => \App\Http\Middleware\ApiDataLogger::class,
+        'cors' => \App\Http\Middleware\Cors::class, 
     ];
 
     /**
