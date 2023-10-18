@@ -145,21 +145,21 @@ class UserController extends APIController
                     $OTP = rand(1000, 9999);
 
                     $user_email = $request->u_email;
-                    // try {
+                    try {
                     $email = array($user_email);
                     $data = array(
                         'otp' => $OTP,
                     );
 
-                    // Mail::send('emails.send_otp_in_email', $data, function ($message) use($email) {
-                    //     $message->from(env("MAIL_USERNAME"), config('app.name'));
-                    //     $message->to($email);
-                    //     $message->subject(config('app.name') . " : Verification mail");
-                    // });
-                    // } catch (\Exception $e) {
-                    //     return $this->respondWithError($e->getMessage());
-                    //     //return $this->respondWithError("Failed: Problem while sending verification mail, try again!");
-                    // }
+                    Mail::send('emails.send_otp_in_email', $data, function ($message) use($email) {
+                        $message->from(env("MAIL_USERNAME"), config('app.name'));
+                        $message->to($email);
+                        $message->subject(config('app.name') . " : Verification mail");
+                    });
+                    } catch (\Exception $e) {
+                        return $this->respondWithError($e->getMessage());
+                        //return $this->respondWithError("Failed: Problem while sending verification mail, try again!");
+                    }
 
                     $user_data->u_otp = $OTP;
                     $user_data->u_is_verified = 2;
