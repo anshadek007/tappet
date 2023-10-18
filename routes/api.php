@@ -39,7 +39,7 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
             //public pet details 
             Route::get('pets/get_pet_details_public/{pet_id}', 'api\v1\PetsController@get_pet_details_for_public')->name('public.pets.get_pet_details');
              //guest routes
-           Route::post('guest/signup', 'api\v1\GuestController@sign_up')->name('api.guest.register');
+            Route::post('guest/signup', 'api\v1\GuestController@sign_up')->name('api.guest.register');
             });
             // user route
             Route::middleware('auth:api')->group(function () {

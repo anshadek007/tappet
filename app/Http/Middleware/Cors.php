@@ -14,9 +14,14 @@ class Cors
      * @return mixed
      */
     public function handle($request, Closure $next)
-    {
-        return $next($request)
-            ->header('Access-Control-Allow-Origin', '*');
+{
+    $response = $next($request);
 
-    }
+    $response->header('Access-Control-Allow-Origin', '*');
+    $response->header('Access-Control-Allow-Methods', implode(',', config('cors.allowed_methods')));
+    $response->header('Access-Control-Allow-Headers', implode(',', config('cors.allowed_headers')));
+    $response->header('Access-Control-Allow-Credentials', config('cors.supports_credentials'));
+
+    return $response;
+}
 }
