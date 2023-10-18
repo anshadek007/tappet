@@ -24,14 +24,18 @@ use App\UserCallHistory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\CorporateFollwer;
+use App\GuestUser;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Lcobucci\JWT\Builder;
-
-class UserController extends APIController {
-
+use App\Traits\ConversationIdGenerator;
+class UserController extends APIController
+{
+    use ConversationIdGenerator;
     protected $userModel;
 
-    public function __construct(Request $request) {
+    public function __construct(Request $request)
+    {
         parent::__construct($request);
         $this->userModel = new \App\User();
     }
@@ -41,7 +45,8 @@ class UserController extends APIController {
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
+    public function index()
+    {
         //
     }
 
@@ -50,8 +55,8 @@ class UserController extends APIController {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
-        
+    public function create()
+    {
     }
 
     /**
@@ -60,8 +65,9 @@ class UserController extends APIController {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function register(Request $request) {
-        
+    public function register(Request $request)
+    {
+
         $request->merge([
             'u_email' => $request->u_email,
             'u_password' => $request->u_password,
@@ -77,14 +83,14 @@ class UserController extends APIController {
             return response()->json($message, 200);
         }
 
-        
+
         $request_data = $request->all();
 
         unset($request_data['device_type']);
         unset($request_data['device_token']);
         $code = 0;
         $user_data = User::where('u_email', trim($request->u_email))->where('u_status', 1)->first();
-        
+
         if (!empty($user_data)) {
             $userdetail_data = $this->get_userdata($user_data);
 
@@ -100,12 +106,18 @@ class UserController extends APIController {
                 $code = 3000;
             } else if ($request->u_user_type != 1) {
                 $user_data = User::where('u_social_id', trim($request->u_social_id))
-                        ->where('u_user_type', $request->u_user_type)
-                        ->where('u_status', 1)
-                        ->first();
+                    ->where('u_user_type', $request->u_user_type)
+                    ->where('u_status', 1)
+                    ->first();
 
                 if (empty($user_data)) {
                     $user_data = User::create($request_data);
+                }
+                //======check is already guest user =======
+                $guest_user_data = GuestUser::where('email', $request->u_email)->first();
+
+                if (!empty($user_data)) {
+                    $update_user = User::where('id', $$user_data->u_id)->update(['conversation_id' => $guest_user_data->conversation_id]);
                 }
                 $successMessage = "Registration successfully completed";
                 $code = 0;
@@ -117,9 +129,9 @@ class UserController extends APIController {
                 $user_data = User::create($request_data);
             } else if ($request->u_user_type != 1) {
                 $user_data = User::where('u_social_id', trim($request->u_social_id))
-                        ->where('u_user_type', $request->u_user_type)
-                        ->where('u_status', 1)
-                        ->first();
+                    ->where('u_user_type', $request->u_user_type)
+                    ->where('u_status', 1)
+                    ->first();
 
                 if (empty($user_data)) {
                     $user_data = User::create($request_data);
@@ -131,19 +143,19 @@ class UserController extends APIController {
             if (!empty($user_data)) {
                 if ($request->u_user_type == 1) {
                     $OTP = rand(1000, 9999);
-                   
+
                     $user_email = $request->u_email;
                     // try {
-                        $email = array($user_email);
-                        $data = array(
-                            'otp' => $OTP,
-                        );
+                    $email = array($user_email);
+                    $data = array(
+                        'otp' => $OTP,
+                    );
 
-                        Mail::send('emails.send_otp_in_email', $data, function ($message) use($email) {
-                            $message->from(env("MAIL_USERNAME"), config('app.name'));
-                            $message->to($email);
-                            $message->subject(config('app.name') . " : Verification mail");
-                        });
+                    // Mail::send('emails.send_otp_in_email', $data, function ($message) use($email) {
+                    //     $message->from(env("MAIL_USERNAME"), config('app.name'));
+                    //     $message->to($email);
+                    //     $message->subject(config('app.name') . " : Verification mail");
+                    // });
                     // } catch (\Exception $e) {
                     //     return $this->respondWithError($e->getMessage());
                     //     //return $this->respondWithError("Failed: Problem while sending verification mail, try again!");
@@ -164,6 +176,24 @@ class UserController extends APIController {
             if ($request->u_user_type != 1) {
                 $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
             }
+            $guest_user_data = GuestUser::where('email', $request->u_email)->first();
+            if (!empty($guest_user_data)) {
+
+                $user = DB::table('users')->where('u_id', $user_data->u_id)->first();
+
+                if ($user) {
+                   
+                    $conversation_id = $guest_user_data->conversation_id;
+                }else{
+                    $conversation_id = $this->conversation_id_generator();
+                }
+
+                $update_user = DB::table('users')
+                ->where('u_id', $user_data->u_id)
+                ->update(['conversation_id' =>  $conversation_id]);
+            }
+
+            $userdetail_data->conversation_id =  $conversation_id;
 
             $message = ["result" => $userdetail_data, "message" => $successMessage, "status" => true, "code" => $code];
         } else {
@@ -173,93 +203,93 @@ class UserController extends APIController {
         return response()->json($message, 200);
     }
 
-    public function login(Request $request) {
-        try{
-           
-        
-        $request->merge([
-            'u_user_type' => $request->u_user_type,
-            'u_email' => $request->u_email,
-            'u_password' => $request->u_password,
-            'u_social_id' => $request->u_social_id,
-            'device_type' => $request->device_type,
-            'device_token' => $request->device_token,
-        ]);
-
-        $u_user_type = $request->u_user_type;
-        $u_email = $request->u_email;
-        $u_password = $request->u_password;
-        $u_social_id = $request->u_social_id;
+    public function login(Request $request)
+    {
+        try {
 
 
-        if (
+            $request->merge([
+                'u_user_type' => $request->u_user_type,
+                'u_email' => $request->u_email,
+                'u_password' => $request->u_password,
+                'u_social_id' => $request->u_social_id,
+                'device_type' => $request->device_type,
+                'device_token' => $request->device_token,
+            ]);
+
+            $u_user_type = $request->u_user_type;
+            $u_email = $request->u_email;
+            $u_password = $request->u_password;
+            $u_social_id = $request->u_social_id;
+
+
+            if (
                 ($u_user_type == 1 && (empty($u_email) || empty($u_password))) ||
                 ($u_user_type == 2 && empty($u_social_id))
-        ) {
-           
-            return $this->sendApiFailedLoginResponse($request);
-        }
+            ) {
 
-        $user_data = array();
+                return $this->sendApiFailedLoginResponse($request);
+            }
 
-        if ($u_user_type == 1 && !empty($u_email)) {
-            $user_data = User::where('u_email', trim($u_email))
+            $user_data = array();
+
+            if ($u_user_type == 1 && !empty($u_email)) {
+                $user_data = User::where('u_email', trim($u_email))
                     ->where('u_status', 1)
                     ->first();
-            if (!$user_data) {
-                return $this->sendApiFailedLoginResponse($request);
-            }
-            if (!Hash::check($u_password, $user_data->u_password)) {
-                return $this->sendApiFailedLoginResponse($request);
-            }
-        } else if ($u_user_type != 1 && !empty($u_social_id)) {
-            $user_data = User::where('u_social_id', trim($u_social_id))
+                if (!$user_data) {
+                    return $this->sendApiFailedLoginResponse($request);
+                }
+                if (!Hash::check($u_password, $user_data->u_password)) {
+                    return $this->sendApiFailedLoginResponse($request);
+                }
+            } else if ($u_user_type != 1 && !empty($u_social_id)) {
+                $user_data = User::where('u_social_id', trim($u_social_id))
                     ->where('u_user_type', $u_user_type)
                     ->where('u_status', 1)
                     ->first();
-        }
-
-
-
-        $successMessage = "Login successfully";
-        if (!empty($user_data)) {
-
-            if ($user_data->u_is_verified != 1) {
-                return $this->respondResult("", 'Email not verified', false, 1000);
             }
 
-            if ($user_data->u_phone_verified != 1) {
-                return $this->respondResult("", 'Phone number not verified', false, 2000);
-            }
 
-            $userdetail_data = $this->get_userdata($user_data);
 
-            if (!env('ALLOW_MULTI_LOGIN', false)) {
-                \DB::table('oauth_access_tokens')
+            $successMessage = "Login successfully";
+            if (!empty($user_data)) {
+
+                if ($user_data->u_is_verified != 1) {
+                    return $this->respondResult("", 'Email not verified', false, 1000);
+                }
+
+                if ($user_data->u_phone_verified != 1) {
+                    return $this->respondResult("", 'Phone number not verified', false, 2000);
+                }
+
+                $userdetail_data = $this->get_userdata($user_data);
+
+                if (!env('ALLOW_MULTI_LOGIN', false)) {
+                    \DB::table('oauth_access_tokens')
                         ->where('name', "app_user")
                         ->where('user_id', $user_data->u_id)
                         ->update(['revoked' => true]);
+                }
+
+                $this->update_device_token($user_data->u_id, $request->device_token, $request->device_type);
+
+                $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
+
+                $message = ["result" => $userdetail_data, "message" => $successMessage, "status" => true, "code" => 0];
+            } else {
+                $message = ["result" => (object) array(), "message" => "Invalid Email Or Password", "status" => false, "code" => 0];
             }
-            
-            $this->update_device_token($user_data->u_id, $request->device_token, $request->device_type);
-            
-            $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
-            
-            $message = ["result" => $userdetail_data, "message" => $successMessage, "status" => true, "code" => 0];
-        } else {
-            $message = ["result" => (object) array(), "message" => "Invalid Email Or Password", "status" => false, "code" => 0];
+
+            return response()->json($message, 200);
+        } catch (Exception $e) {
+
+            echo 'Message: ' . $e->getMessage();
         }
-
-        return response()->json($message, 200);
-    }catch(Exception $e) {
-        
-            echo 'Message: ' .$e->getMessage();
-          }
-
-    
     }
 
-    public function verifyOTP(Request $request) {
+    public function verifyOTP(Request $request)
+    {
 
         $request->merge([
             'u_mobile_number' => $request->u_mobile_number,
@@ -279,8 +309,8 @@ class UserController extends APIController {
 
         $user_data = array();
         $user_data = User::where('u_mobile_number', trim($u_mobile_number))
-                        ->where('u_otp', $u_otp)
-                        ->where('u_status', 1)->first();
+            ->where('u_otp', $u_otp)
+            ->where('u_status', 1)->first();
 
         if (!empty($user_data)) {
             $user_data->u_otp = "";
@@ -296,8 +326,9 @@ class UserController extends APIController {
         return response()->json($message, 200);
     }
 
-    public function verifyEmailOTP(Request $request) {
-        
+    public function verifyEmailOTP(Request $request)
+    {
+
         $request->merge([
             'u_email' => $request->u_email,
             'u_otp' => $request->u_otp,
@@ -316,12 +347,12 @@ class UserController extends APIController {
 
         $user_data = array();
         $user_data = User::where('u_email', trim($u_email))->where('u_otp', $u_otp)->where('u_status', 1)->first();
-        
+
         if (!empty($user_data)) {
             $user_data->u_otp = "";
             $user_data->u_is_verified = 1;
             $user_data->update();
-           
+
             $userdetail_data = $this->get_userdata($user_data);
             $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
             $message = ["result" => $userdetail_data, "message" => "Email verified successfully.", "status" => true, "code" => 0];
@@ -332,9 +363,12 @@ class UserController extends APIController {
         return response()->json($message, 200);
     }
 
-    public function sendApiFailedLoginResponse(Request $request) {
-        $message = ["result" => (object) null, "message" => AESCrypt::encryptString(trans('auth.failed')),
-            "status" => FALSE, "code" => 60];
+    public function sendApiFailedLoginResponse(Request $request)
+    {
+        $message = [
+            "result" => (object) null, "message" => AESCrypt::encryptString(trans('auth.failed')),
+            "status" => FALSE, "code" => 60
+        ];
 
         return response()->json($message, 200);
     }
@@ -345,7 +379,8 @@ class UserController extends APIController {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         //
     }
 
@@ -355,7 +390,8 @@ class UserController extends APIController {
      * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $id) {
+    public function show(Request $request, $id)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -400,7 +436,7 @@ class UserController extends APIController {
         }
 
         $userdetail_data['pets'] = $pets;
-        
+
         $pet_co_owned = $this->userModel->pet_co_owned($id)->get();
 
         if (!empty($pet_co_owned)) {
@@ -432,11 +468,11 @@ class UserController extends APIController {
         $userdetail_data['pet_co_owned'] = $pet_co_owned;
 
         $friend_invite = UserBlocks::where("user_block_user_id", $login_user_id)
-                ->where("user_block_blocked_user_id", $id)
-                ->first();
+            ->where("user_block_blocked_user_id", $id)
+            ->first();
 
 
-        $follwercount = CorporateFollwer::where('u_id',$userdetail_data['u_id'])->count();
+        $follwercount = CorporateFollwer::where('u_id', $userdetail_data['u_id'])->count();
         $userdetail_data['follwerCount'] = $follwercount;
 
         $userdetail_data['userblockbyme'] = !empty($friend_invite) ? true : false;
@@ -444,7 +480,8 @@ class UserController extends APIController {
         return $this->respondResult($userdetail_data, 'User details found successfully.', true, 200);
     }
 
-    public function get_user_devices(Request $request) {
+    public function get_user_devices(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -465,7 +502,8 @@ class UserController extends APIController {
      * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $user = $this->userModel->validateUser($id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -510,11 +548,13 @@ class UserController extends APIController {
      * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user) {
+    public function destroy(User $user)
+    {
         //
     }
 
-    public function updateUserDetail(Request $request) {
+    public function updateUserDetail(Request $request)
+    {
         $id = !empty($request->u_id) ? $request->u_id : "";
         $user = $this->userModel->validateUser($id);
         if (!$user) {
@@ -615,7 +655,7 @@ class UserController extends APIController {
         if (!empty($request->u_longitude)) {
             $user->u_longitude = $request->u_longitude;
         }
-        
+
         if (!empty($request->u_gender)) {
             $user->u_gender = $request->u_gender;
         }
@@ -623,11 +663,12 @@ class UserController extends APIController {
         $user->save();
 
         $userdetail_data = $this->get_userdata($user);
-        
+
         return $this->respondResult($userdetail_data, 'User details updated successfully.', true, 200);
     }
 
-    public function update_notification_settings(Request $request) {
+    public function update_notification_settings(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
 
         if (!$user) {
@@ -657,8 +698,9 @@ class UserController extends APIController {
         return $this->respondResult($userdetail_data, 'Notification Alerts updated successfully.', true, 200);
     }
 
-    public function updateProfilePicture(Request $request) {
-       
+    public function updateProfilePicture(Request $request)
+    {
+
         $request->merge([
             'u_id' => $request->u_id,
         ]);
@@ -673,7 +715,7 @@ class UserController extends APIController {
             'u_id' => ['required'],
         ];
 
-    if (!empty($request->file('u_image'))) {
+        if (!empty($request->file('u_image'))) {
             $rules['u_image'] = 'required|mimes:jpeg,jpg,png|max:5098';
         }
 
@@ -689,8 +731,8 @@ class UserController extends APIController {
 
         if (!empty($request->file('u_image'))) {
             $fileName = $this->uploadFile($request->file('u_image'), $id, 'users');
-            
-         
+
+
             if (!$fileName) {
                 return $this->respondWithError("Failed to upload profile picture, Try again..!");
             }
@@ -698,13 +740,14 @@ class UserController extends APIController {
         }
 
         $user->save();
-        
+
         $userdetail_data = $this->get_userdata($user);
-       
+
         return $this->respondResult($userdetail_data, 'User detail updeted successfully.', true, 200);
     }
 
-    public function changePassword(Request $request) {
+    public function changePassword(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -738,7 +781,8 @@ class UserController extends APIController {
         }
     }
 
-    public function createPassword(Request $request) {
+    public function createPassword(Request $request)
+    {
         $id = !empty($request->u_id) ? $request->u_id : "";
         $user = $this->userModel->validateUser($id);
         if (!$user) {
@@ -769,10 +813,10 @@ class UserController extends APIController {
         }
 
         $user_data = User::where('u_email', trim($request->u_email))
-                ->where('u_otp', trim($request->u_otp))
-                ->where('u_id', trim($request->u_id))
-                ->where('u_status', 1)
-                ->first();
+            ->where('u_otp', trim($request->u_otp))
+            ->where('u_id', trim($request->u_id))
+            ->where('u_status', 1)
+            ->first();
 
         $successMessage = "OTP resend successfully";
         if (!empty($user_data)) {
@@ -786,14 +830,15 @@ class UserController extends APIController {
         return $this->respondResult("", 'Invalid OTP', false, 200);
     }
 
-    public function ForgotPassword(Request $request) {
+    public function ForgotPassword(Request $request)
+    {
         if (empty($request->u_email)) {
             return $this->respondResult("", 'Email is required', false, 200);
         }
 
         $user_data = User::where('u_email', trim($request->u_email))
-                ->where('u_status', 1)
-                ->first();
+            ->where('u_status', 1)
+            ->first();
 
         if (!empty($user_data)) {
 
@@ -807,13 +852,13 @@ class UserController extends APIController {
                     'otp' => $OTP,
                 );
 
-                Mail::send('emails.send_forgot_password_otp_in_email', $data, function ($message) use($email) {
+                Mail::send('emails.send_forgot_password_otp_in_email', $data, function ($message) use ($email) {
                     $message->from(env("MAIL_USERNAME"), config('app.name'));
                     $message->to($email);
                     $message->subject(config('app.name') . " : Forgot password mail");
                 });
             } catch (\Exception $e) {
-//                return $this->respondWithError($e->getMessage());
+                //                return $this->respondWithError($e->getMessage());
                 return $this->respondWithError("Failed: Problem while sending mail, try again!");
             }
 
@@ -836,7 +881,8 @@ class UserController extends APIController {
      * @param  array  $data
      * @return \Illuminate\Contracts\Validation\Validator
      */
-    protected function validator(array $data) {
+    protected function validator(array $data)
+    {
         $rules = [
             'u_user_type' => ['required'],
         ];
@@ -846,25 +892,25 @@ class UserController extends APIController {
         }
 
         $customMessages = [
-//            'u_first_name.required' => 'Name is required field.',
-//            'u_first_name.string' => 'Name allows only alphabetical characters.',
+            //            'u_first_name.required' => 'Name is required field.',
+            //            'u_first_name.string' => 'Name allows only alphabetical characters.',
             'u_user_type.required' => 'User type is required field.',
-                //'u_user_type.integer' => 'Invalid user account type',
-                //'u_user_type.max' => 'Invalid user account type',
-//            'u_image.image' => 'The type of the uploaded file should be an image.',
-//            'u_image.mimes' => 'The type of the uploaded file should be an image.',
-//            'u_image.uploaded' => 'Failed to upload an image. The image maximum size is 5MB.'
+            //'u_user_type.integer' => 'Invalid user account type',
+            //'u_user_type.max' => 'Invalid user account type',
+            //            'u_image.image' => 'The type of the uploaded file should be an image.',
+            //            'u_image.mimes' => 'The type of the uploaded file should be an image.',
+            //            'u_image.uploaded' => 'Failed to upload an image. The image maximum size is 5MB.'
         ];
 
         $request_email = isset($data['u_email']) ? $data['u_email'] : '';
         $request_phone = isset($data['u_mobile_number']) ? $data['u_mobile_number'] : '';
 
         if (isset($data['u_user_type']) && $data['u_user_type'] == 1) {
-//            $rules['u_first_name'] = ['required', 'string', 'max:255'];
+            //            $rules['u_first_name'] = ['required', 'string', 'max:255'];
             $rules['u_email'] = ['required', 'email', 'max:255'];
-//            $rules['u_email'] = ['required', 'email', 'max:255', 'unique:users,u_email,NULL,u_id,u_deleted_at,NULL'];
-//            $rules['u_country_code'] = ['required'];
-//            $rules['u_mobile_number'] = ['required', 'min:10', 'max:20', 'unique:users,u_mobile_number,NULL,u_id,u_deleted_at,NULL'];
+            //            $rules['u_email'] = ['required', 'email', 'max:255', 'unique:users,u_email,NULL,u_id,u_deleted_at,NULL'];
+            //            $rules['u_country_code'] = ['required'];
+            //            $rules['u_mobile_number'] = ['required', 'min:10', 'max:20', 'unique:users,u_mobile_number,NULL,u_id,u_deleted_at,NULL'];
 
             $customMessages['u_email.required'] = "Email is required field.";
             $customMessages['u_email.email'] = "Email must be a valid email address.";
@@ -879,19 +925,19 @@ class UserController extends APIController {
 
             if (!empty($request_email)) {
                 $rules['u_email'] = ['required', 'email', 'max:255'];
-//                $rules['u_email'] = ['required', 'email', 'max:255', 'unique:users,u_email,NULL,u_id,u_deleted_at,NULL'];
+                //                $rules['u_email'] = ['required', 'email', 'max:255', 'unique:users,u_email,NULL,u_id,u_deleted_at,NULL'];
                 $customMessages['u_email.required'] = "Email is required field.";
                 $customMessages['u_email.email'] = "Email must be a valid email address.";
                 $customMessages['u_email.unique'] = "The {$request_email} email has already been taken.";
             }
-//
-//            if (!empty($request_phone)) {
-//                $rules['u_mobile_number'] = ['required', 'min:10', 'max:20', 'unique:users,u_mobile_number,NULL,u_id,u_deleted_at,NULL'];
-//                $customMessages['u_mobile_number.required'] = "Phone number is required field.";
-//                $customMessages['u_mobile_number.min'] = "Phone number may not be less than 10 digits.";
-//                $customMessages['u_mobile_number.max'] = "Phone number may not be greater than 20 digits.";
-//                $customMessages['u_mobile_number.unique'] = "The {$request_phone} mobile number has already been taken.";
-//            }
+            //
+            //            if (!empty($request_phone)) {
+            //                $rules['u_mobile_number'] = ['required', 'min:10', 'max:20', 'unique:users,u_mobile_number,NULL,u_id,u_deleted_at,NULL'];
+            //                $customMessages['u_mobile_number.required'] = "Phone number is required field.";
+            //                $customMessages['u_mobile_number.min'] = "Phone number may not be less than 10 digits.";
+            //                $customMessages['u_mobile_number.max'] = "Phone number may not be greater than 20 digits.";
+            //                $customMessages['u_mobile_number.unique'] = "The {$request_phone} mobile number has already been taken.";
+            //            }
 
             $customMessages['u_social_id.required'] = "Invalid request parameters, Try again...!";
             $customMessages['u_social_id.max'] = "Invalid request parameters, Try again...!";
@@ -900,7 +946,8 @@ class UserController extends APIController {
         return Validator::make($data, $rules, $customMessages);
     }
 
-    public function updateDeviceToken(Request $request) {
+    public function updateDeviceToken(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -921,7 +968,8 @@ class UserController extends APIController {
         return $this->respondResult(array(), 'Device token updated succesfully', true, 200);
     }
 
-    public function resendOTP(Request $request) {
+    public function resendOTP(Request $request)
+    {
         $user_data = array();
         if (!empty($request->u_mobile_number)) {
             $user_data = User::select('u_id', 'u_email', 'u_mobile_number', 'u_otp')->where('u_mobile_number', trim($request->u_mobile_number))->first();
@@ -941,7 +989,7 @@ class UserController extends APIController {
                         'otp' => $OTP,
                     );
 
-                    Mail::send('emails.send_otp_in_email', $data, function ($message) use($email) {
+                    Mail::send('emails.send_otp_in_email', $data, function ($message) use ($email) {
                         $message->from('Tappet@admin.com', config('app.name'));
                         $message->to($email);
                         $message->subject(config('app.name') . " : Verification mail");
@@ -976,10 +1024,12 @@ class UserController extends APIController {
         return response()->json($message, 200);
     }
 
-    public function get_userdata($user_data, $login_user_id = 0) {
-       
+    public function get_userdata($user_data, $login_user_id = 0)
+    {
+
         $userdetail_data = new \stdClass();
         $userdetail_data->u_id = $user_data->u_id;
+        $userdetail_data->conversation_id = $user_data->conversation_id;
         $userdetail_data->u_first_name = !empty($user_data->u_first_name) ? $user_data->u_first_name : "";
         $userdetail_data->u_last_name = !empty($user_data->u_last_name) ? $user_data->u_last_name : "";
         $userdetail_data->u_email = !empty($user_data->u_email) ? $user_data->u_email : "";
@@ -1009,7 +1059,7 @@ class UserController extends APIController {
 
         $userdetail_data->friend_request = 0;
         $userdetail_data->friend_request_sent_by_me = false;
-        
+
         if (!empty($login_user_id)) {
             $invites = 'SELECT
                         tappet_user_friends.*
@@ -1040,7 +1090,8 @@ class UserController extends APIController {
         return $userdetail_data;
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
 
         if (!$user) {
@@ -1048,7 +1099,7 @@ class UserController extends APIController {
         }
 
         //delete the device token of the same user id if exists
-//        UserDeviceToken::where('udt_u_id', Auth::user()->u_id)->delete();
+        //        UserDeviceToken::where('udt_u_id', Auth::user()->u_id)->delete();
 
         if (!empty($request->device_uid)) {
             UserDeviceToken::where('udt_security_token', $request->device_uid)->delete();
@@ -1071,7 +1122,8 @@ class UserController extends APIController {
      * @param type $app_version
      * @param type $api_version
      */
-    public function update_device_token($user_id = 0, $device_token = null, $device_type = null, $security_token = null, $device_name = "", $device_model_name = "", $device_os_version = "", $app_version = "", $api_version = "") {
+    public function update_device_token($user_id = 0, $device_token = null, $device_type = null, $security_token = null, $device_name = "", $device_model_name = "", $device_os_version = "", $app_version = "", $api_version = "")
+    {
         if (!empty($user_id) && !empty($device_token) && !empty($device_type) && !empty($security_token)) {
             //delete the device token of the same user id if exists
             if (!env('ALLOW_MULTI_LOGIN', false)) {
@@ -1079,21 +1131,22 @@ class UserController extends APIController {
             }
 
             $result = UserDeviceToken::updateOrCreate([
-                        'udt_security_token' => $security_token
-                            ], [
-                        'udt_u_id' => $user_id,
-                        'udt_device_token' => $device_token,
-                        'udt_device_type' => $device_type,
-                        'udt_device_name' => $device_name,
-                        'udt_device_model_name' => $device_model_name,
-                        'udt_device_os_version' => $device_os_version,
-                        'udt_app_version' => $app_version,
-                        'udt_api_version' => $api_version,
+                'udt_security_token' => $security_token
+            ], [
+                'udt_u_id' => $user_id,
+                'udt_device_token' => $device_token,
+                'udt_device_type' => $device_type,
+                'udt_device_name' => $device_name,
+                'udt_device_model_name' => $device_model_name,
+                'udt_device_os_version' => $device_os_version,
+                'udt_app_version' => $app_version,
+                'udt_api_version' => $api_version,
             ]);
         }
     }
 
-    public function remove_device(Request $request) {
+    public function remove_device(Request $request)
+    {
         $response["message"] = "Device ID is required";
         if (!empty($request->device_id)) {
             UserDeviceToken::where('udt_id', $request->device_id)->delete();
@@ -1106,7 +1159,8 @@ class UserController extends APIController {
         return response()->json($response, 200);
     }
 
-    public function block_or_unblock_user(Request $request) {
+    public function block_or_unblock_user(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1122,8 +1176,8 @@ class UserController extends APIController {
         $reciever_id = !empty($request->user_id) ? $request->user_id : null;
 
         $friend_invite = UserBlocks::where("user_block_user_id", $sender_id)
-                ->where("user_block_blocked_user_id", $reciever_id)
-                ->first();
+            ->where("user_block_blocked_user_id", $reciever_id)
+            ->first();
 
         $message = "User not found in your block list";
         if (empty($friend_invite) && $state == 'Block') {
@@ -1147,7 +1201,8 @@ class UserController extends APIController {
         return response()->json($response, 200);
     }
 
-    public function get_blocked_users(Request $request) {
+    public function get_blocked_users(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1155,11 +1210,11 @@ class UserController extends APIController {
         $id = Auth::user()->u_id;
 
         $fetch_record = UserBlocks::select('u_id', \DB::raw("CONCAT(u_first_name,' ',u_last_name) as user_name"), 'u_image')
-                ->where("user_block_user_id", $user->u_id)
-                ->join('users', 'user_block_blocked_user_id', 'u_id')
-                ->where('user_block_status', 1)
-                ->where('u_status', 1)
-                ->get();
+            ->where("user_block_user_id", $user->u_id)
+            ->join('users', 'user_block_blocked_user_id', 'u_id')
+            ->where('user_block_status', 1)
+            ->where('u_status', 1)
+            ->get();
 
 
         $fetch_record_list = array();
@@ -1195,7 +1250,8 @@ class UserController extends APIController {
      * @param Request $request
      * @return type
      */
-    public function invite_friend(Request $request) {
+    public function invite_friend(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1290,7 +1346,7 @@ class UserController extends APIController {
                     'invitation_token' => $random_invitation_token,
                 );
 
-                Mail::send('emails.invite_friend', $data, function ($message) use($email) {
+                Mail::send('emails.invite_friend', $data, function ($message) use ($email) {
                     $message->from(env("MAIL_USERNAME"), config('app.name'));
                     $message->to($email);
                     $message->subject(config('app.name') . " : Friend invitation mail");
@@ -1313,7 +1369,8 @@ class UserController extends APIController {
      * @param Request $request
      * @return type
      */
-    public function my_friends(Request $request) {
+    public function my_friends(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
 
         if (!$user) {
@@ -1328,27 +1385,27 @@ class UserController extends APIController {
             'limit' => AESCrypt::decryptString($request->limit),
         ]);
 
-        
+
 
         $limit = !empty($request->limit) ? $request->limit : config('constants.DEFAULT_PAGINATION_LIMIT');
         $page = !empty($request->page) ? $request->page : 1;
         $offset = ($page - 1) * $limit;
 
-        
+
         $get_all_records_user = User::select("u_id", "u_first_name", "u_email", "u_image", "city_name", "c_name", "ufr_status")
-                ->leftJoin('user_friends', function ($join) {
-                    $join->on('u_id', '=', 'ufr_invited_user_id')
+            ->leftJoin('user_friends', function ($join) {
+                $join->on('u_id', '=', 'ufr_invited_user_id')
                     ->orOn('u_id', '=', 'ufr_user_id');
-                })
-                ->leftJoin('cities', 'city_id', '=', 'u_city')
-                ->leftJoin('countries', 'c_id', '=', 'city_country_id')
-                ->where(function($query) use($id) {
-                    $query->where('ufr_user_id', $id)
+            })
+            ->leftJoin('cities', 'city_id', '=', 'u_city')
+            ->leftJoin('countries', 'c_id', '=', 'city_country_id')
+            ->where(function ($query) use ($id) {
+                $query->where('ufr_user_id', $id)
                     ->orWhere('ufr_invited_user_id', $id);
-                })
-                ->where('ufr_status', "!=", 9)
-                ->where('u_id', "!=", $id)
-                ->get();
+            })
+            ->where('ufr_status', "!=", 9)
+            ->where('u_id', "!=", $id)
+            ->get();
 
 
         $get_all_records_email = UserFriends::select("*")->where('ufr_user_id', $id)->where('ufr_status', "!=", 9)->where('ufr_invited_user_id', NULL)->get();
@@ -1415,7 +1472,8 @@ class UserController extends APIController {
      * @param Request $request
      * @return type
      */
-    public function get_user_activity(Request $request) {
+    public function get_user_activity(Request $request)
+    {
         $request->merge([
             'u_id' => AESCrypt::decryptString($request->u_id),
             'device_type' => AESCrypt::decryptString($request->device_type),
@@ -1600,7 +1658,8 @@ class UserController extends APIController {
      * @param type $n_status
      * @param type $tour
      */
-    private function send_friend_invite_push($n_reciever_id, $n_sender_id, $n_message, $n_notification_type, $n_status, $user) {
+    private function send_friend_invite_push($n_reciever_id, $n_sender_id, $n_message, $n_notification_type, $n_status, $user)
+    {
         if (!empty($n_reciever_id) && !empty($n_sender_id) && !empty($n_message) && !empty($n_notification_type) && !empty($n_status) && !empty($user)) {
             $notification_data = new Notification();
             $notification_data->n_reciever_id = $n_reciever_id;
@@ -1617,7 +1676,8 @@ class UserController extends APIController {
         }
     }
 
-    public function friend_request_action(Request $request) {
+    public function friend_request_action(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1642,7 +1702,7 @@ class UserController extends APIController {
         $state = !empty($request->state) && $request->state == 1 ? $request->state : 2;
 
         $friend_invite = UserFriends::where("ufr_user_id", $notification->n_sender_id)
-                        ->where("ufr_invited_user_id", $notification->n_reciever_id)->first();
+            ->where("ufr_invited_user_id", $notification->n_reciever_id)->first();
 
         $message = "";
         if (!empty($friend_invite) && $state == 1) {
@@ -1669,7 +1729,8 @@ class UserController extends APIController {
         return response()->json($response, 200);
     }
 
-    public function get_user_and_group_details(Request $request) {
+    public function get_user_and_group_details(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1696,9 +1757,9 @@ class UserController extends APIController {
                 if (!empty($find_record)) {
 
                     $value = Groups::with(['addedBy', 'group_members', 'group_members.member'])
-                            ->select("*")
-                            ->where('group_id', $group_id)
-                            ->first();
+                        ->select("*")
+                        ->where('group_id', $group_id)
+                        ->first();
 
                     $fetch_record_list = array();
                     $response = array();
@@ -1709,12 +1770,12 @@ class UserController extends APIController {
                         }
 
                         $get_group_events = Events::join('event_groups', 'eg_event_id', 'event_id')
-                                ->select('events.*')
-                                ->where('eg_group_id', $group_id)
-                                ->where('event_status', 1)
-                                ->whereNull('event_deleted_at')
-                                ->orderBy('event_start_date', 'ASC')
-                                ->first();
+                            ->select('events.*')
+                            ->where('eg_group_id', $group_id)
+                            ->where('event_status', 1)
+                            ->whereNull('event_deleted_at')
+                            ->orderBy('event_start_date', 'ASC')
+                            ->first();
 
                         $value->events = !empty($get_group_events) ? $get_group_events : array();
 
@@ -1727,7 +1788,7 @@ class UserController extends APIController {
         $cor_list = [];
         if (!empty($request->corIds) && is_array($request->corIds) && count($request->corIds) > 0) {
             foreach ($request->corIds as $id) {
-                
+
                 $user = BusinessUser::find($id);
                 if (!empty($user)) {
                     // $userdetail_data = $this->get_userdata($user, $login_user_id);
@@ -1743,7 +1804,8 @@ class UserController extends APIController {
         return $this->respondResult($response, '', true, 200);
     }
 
-    public function store_call_history(Request $request) {
+    public function store_call_history(Request $request)
+    {
         try {
             $user = $this->userModel->validateUser(Auth::user()->u_id);
             if (!$user) {
@@ -1796,7 +1858,8 @@ class UserController extends APIController {
         }
     }
 
-    public function get_call_history(Request $request) {
+    public function get_call_history(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1805,18 +1868,18 @@ class UserController extends APIController {
         $id = Auth::user()->u_id;
 
         $fetch_record = User::select("u_id", "u_email", "u_image", "call_history_id", "call_from_user_id", "call_to_user_id", "call_duration", "call_history_status", "call_datetime", \DB::raw("CONCAT(u_first_name,' ',u_last_name) as user_name"))
-                ->leftJoin('user_call_histories', function ($join) {
-                    $join->on('u_id', '=', 'call_to_user_id')
+            ->leftJoin('user_call_histories', function ($join) {
+                $join->on('u_id', '=', 'call_to_user_id')
                     ->orOn('u_id', '=', 'call_from_user_id');
-                })
-                ->where(function($query) use($id) {
-                    $query->where('call_to_user_id', $id)
+            })
+            ->where(function ($query) use ($id) {
+                $query->where('call_to_user_id', $id)
                     ->orWhere('call_from_user_id', $id);
-                })
-                ->where('call_history_status', "!=", 9)
-                ->where('u_id', "!=", $id)
-                ->orderBy('call_datetime', 'DESC')
-                ->get();
+            })
+            ->where('call_history_status', "!=", 9)
+            ->where('u_id', "!=", $id)
+            ->orderBy('call_datetime', 'DESC')
+            ->get();
 
         $fetch_record_list = array();
         $response = array();
@@ -1853,7 +1916,8 @@ class UserController extends APIController {
         return response()->json($response, 200);
     }
 
-    public function get_call_history_by_user_id(Request $request) {
+    public function get_call_history_by_user_id(Request $request)
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
@@ -1881,19 +1945,19 @@ class UserController extends APIController {
             $id = (int) $request->auth_user_id;
         }
 
-            //\DB::enableQueryLog();
+        //\DB::enableQueryLog();
         $fetch_record = UserCallHistory::select("*")
-                ->where(function($query) use($id, $other_user_id) {
-                    $query->where('call_to_user_id', $id)
+            ->where(function ($query) use ($id, $other_user_id) {
+                $query->where('call_to_user_id', $id)
                     ->where('call_from_user_id', $other_user_id);
-                })
-                ->orWhere(function($query) use($id, $other_user_id) {
-                    $query->where('call_to_user_id', $other_user_id)
+            })
+            ->orWhere(function ($query) use ($id, $other_user_id) {
+                $query->where('call_to_user_id', $other_user_id)
                     ->where('call_from_user_id', $id);
-                })
-                ->where('call_history_status', "!=", 9)
-                ->orderBy('call_datetime', 'DESC')
-                ->get();
+            })
+            ->where('call_history_status', "!=", 9)
+            ->orderBy('call_datetime', 'DESC')
+            ->get();
 
         $fetch_record_list = array();
         $response = array();
@@ -1927,13 +1991,14 @@ class UserController extends APIController {
         return response()->json($response, 200);
     }
 
-    public function  get_follwer_list(){
+    public function  get_follwer_list()
+    {
         $user = $this->userModel->validateUser(Auth::user()->u_id);
         if (!$user) {
             return $this->respondResult("", 'User Not Found', false, 200);
         }
 
-        $follwerUser = CorporateFollwer::where('u_id',$user['u_id'])->with('coUser')->get();
+        $follwerUser = CorporateFollwer::where('u_id', $user['u_id'])->with('coUser')->get();
         if (count($follwerUser) > 0) {
             $message = 'Bussine User Details.';
         } else {
@@ -1945,7 +2010,4 @@ class UserController extends APIController {
 
         return response()->json($response, 200);
     }
-
-    
-
 }
