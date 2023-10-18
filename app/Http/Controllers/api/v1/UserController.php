@@ -180,14 +180,13 @@ class UserController extends APIController
             if (!empty($guest_user_data)) {
 
                 $user = DB::table('users')->where('u_id', $user_data->u_id)->first();
-
                 if ($user) {
-                   
                     $conversation_id = $guest_user_data->conversation_id;
                 }else{
                     $conversation_id = $this->conversation_id_generator();
                 }
-
+            }else{
+                $conversation_id = $this->conversation_id_generator();
                 $update_user = DB::table('users')
                 ->where('u_id', $user_data->u_id)
                 ->update(['conversation_id' =>  $conversation_id]);
