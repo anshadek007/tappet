@@ -32,6 +32,10 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
         Route::group(array('prefix' => 'v1'), function() {
             Route::post('password/email', 'api\v1\ForgotPasswordController@sendResetApiLinkEmail')->name('forgotpassword');
             Route::post('corporateuser/password/email', 'api\v1\CorporateForgotPasswordController@sendResetApiLinkEmail')->name('corporateuser.forgotpassword');
+           //gust routes
+           Route::post('guest/signup', 'api\v1\GuestController@sign_up')->name('api.guest.register');
+           
+
             Route::middleware(['cors'])->group(function () {
             //public pet details 
             Route::get('pets/get_pet_details_public/{pet_id}', 'api\v1\PetsController@get_pet_details_for_public')->name('public.pets.get_pet_details');
@@ -249,5 +253,6 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
             Route::post('corporateuser/get_nearYou_corporate', 'api\v1\CorporateUserController@get_nearYou_corporate')->name('corporateuser.get_nearYou_corporate');
             Route::post('corporateuser/get_topRated_corporate', 'api\v1\CorporateUserController@get_topRated_corporate')->name('corporateuser.get_topRated_corporate');
         });
+        
     // });
 });

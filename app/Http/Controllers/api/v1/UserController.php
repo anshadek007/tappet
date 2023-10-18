@@ -77,12 +77,7 @@ class UserController extends APIController {
             return response()->json($message, 200);
         }
 
-        if (!empty($request->u_password)) {
-            $request->merge([
-                'u_password' => bcrypt($request->u_password)
-            ]);
-        }
-
+        
         $request_data = $request->all();
 
         unset($request_data['device_type']);
@@ -1950,5 +1945,7 @@ class UserController extends APIController {
 
         return response()->json($response, 200);
     }
+
+    
 
 }

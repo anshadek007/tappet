@@ -51,6 +51,11 @@ return [
             'provider' => 'corporateUser',
             'hash' => false,
         ],
+        'guest' => [
+            'driver' => 'passport',
+            'provider' => 'guest',
+            'hash' => false,
+        ],
     ],
     /*
       |--------------------------------------------------------------------------
@@ -80,6 +85,10 @@ return [
         'corporateUser' => [
             'driver' => 'eloquent',
             'model' => App\BusinessUser::class,
+        ],
+        'guest' => [
+            'driver' => 'eloquent',
+            'model' => App\GuestUser::class, 
         ],
     // 'corporateUser' => [
     //     'driver' => 'database',

@@ -1503,6 +1503,8 @@ class PetsController extends APIController {
     public function get_pet_details_for_public(Request $request) {
 
         try {
+
+            
            
             $find_record = Pets::find($request->pet_id);
 

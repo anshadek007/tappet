@@ -16,7 +16,7 @@ class CreateGuestUsersTable extends Migration
         Schema::create('guest_users', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('conversation_id');
             $table->boolean('status')->default(1);
             $table->timestamps();
