@@ -3,6 +3,7 @@
    php_value post_max_size 128M
    php_value max_execution_time 300
    php_value max_input_time 300
+   Header set Access-Control-Allow-Origin "*"
 </IfModule>
 
 <IfModule mod_php5.c>
@@ -10,6 +11,7 @@
    php_value post_max_size 128M
    php_value max_execution_time 300
    php_value max_input_time 300
+   Header set Access-Control-Allow-Origin "*"
 </IfModule>
 
 <IfModule mod_rewrite.c>
