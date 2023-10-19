@@ -3,6 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE');
+header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token, Origin, Authorization');
+
 Route::group(array('prefix' => 'v1'), function() {
     Route::get('/test_ios_push', function () {
         $token = request()->token;
@@ -35,13 +39,13 @@ Route::group(['middleware' => ['apiDataLogger']], function() {
           
            
 
-            Route::middleware(['cors'])->group(function () {
+        
                 
             //public pet details 
             Route::get('pets/get_pet_details_public/{pet_id}', 'api\v1\PetsController@get_pet_details_for_public')->name('public.pets.get_pet_details');
              //guest routes
             Route::post('guest/signup', 'api\v1\GuestController@sign_up')->name('api.guest.register');
-            });
+            
             // user route
             Route::middleware('auth:api')->group(function () {
                 //User routes
