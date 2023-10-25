@@ -51,14 +51,21 @@ class GuestController extends Controller
                 return response()->json($message, 200);
             }
 
+            //check guest alreday exists or not 
 
-            
-            
-            $request_data = $request->all();
-            $request_data['conversation_id'] = $this->conversation_id_generator();
-            $guest_data = GuestUser::create($request_data);
-            $token = $guest_data->createToken("guest_user")->accessToken;
-            $guest_data['token'] = $token;
+            $user_data = GuestUser::where('email', $request->email)->first();
+            if (empty($user_data)) {
+                $request_data = $request->all();
+                $request_data['conversation_id'] = $this->conversation_id_generator();
+                $guest_data = GuestUser::create($request_data);
+                $token = $guest_data->createToken("guest_user")->accessToken;
+                $guest_data['token'] = $token;
+            } else {
+                $guest_data =  $user_data;
+                $token = $guest_data->createToken("guest_user")->accessToken;
+                $guest_data['token'] = $token;
+            }
+
             $message = ["result" => $guest_data, "message" => 'Signup successfully completed', "status" => true, "code" => 0];
             return response()->json($message, 200);
         } catch (Exception $e) {
