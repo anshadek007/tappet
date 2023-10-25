@@ -70,7 +70,7 @@ class UserController extends APIController
 
         $request->merge([
             'u_email' => $request->u_email,
-            'u_password' => $request->u_password,
+            'u_password' => Hash::make($request->u_password),
             'u_user_type' => $request->u_user_type,
             'u_social_id' => $request->u_social_id,
             'device_type' => $request->device_type,
