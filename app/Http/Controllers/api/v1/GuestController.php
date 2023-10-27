@@ -65,7 +65,7 @@ class GuestController extends Controller
                 $token = $guest_data->createToken("guest_user")->accessToken;
                 $guest_data['token'] = $token;
             }
-
+            $guest_data['u_id'] = $guest_data['id'];
             $message = ["result" => $guest_data, "message" => 'Signup successfully completed', "status" => true, "code" => 0];
             return response()->json($message, 200);
         } catch (Exception $e) {
