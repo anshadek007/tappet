@@ -43,30 +43,23 @@ class GuestController extends Controller
                 return response()->json($message, 200);
             }
 
-
-            //check guest user or permanent user
-            $user_data = User::where('u_email', $request->email)->first();
-            if (!empty($user_data)) {
-                $message = ["result" => (object) array(), "message" => "Email already exists Please login to continue", "status" => false, "code" => 60];
-                return response()->json($message, 200);
-            }
-
-            //check guest alreday exists or not 
-
-            $user_data = GuestUser::where('email', $request->email)->first();
+            $user_data = User::select('u_id','u_email','u_first_name','u_last_name')->where('u_email', $request->email)->first();
             if (empty($user_data)) {
-                $request_data = $request->all();
-                $request_data['conversation_id'] = $this->conversation_id_generator();
-                $guest_data = GuestUser::create($request_data);
-                $token = $guest_data->createToken("guest_user")->accessToken;
-                $guest_data['token'] = $token;
+                // $request_data['conversation_id'] = $this->conversation_id_generator();
+                $request_data['is_guest'] = 1;
+                $request_data['u_email'] = $request->email;
+                $request_data['u_first_name'] = $request->name;
+                $request_data['u_last_name'] = "";
+                $user_data = User::create($request_data);
+                $token = $user_data->createToken("app_user")->accessToken;
+                $user_data['token'] = $token;
+                $message = "Guest user login successfully";
             } else {
-                $guest_data =  $user_data;
-                $token = $guest_data->createToken("guest_user")->accessToken;
-                $guest_data['token'] = $token;
+                $token = $user_data->createToken("app_user")->accessToken;
+                $user_data['token'] = $token;
+                $message = "User login successfully";
             }
-            $guest_data['u_id'] = $guest_data['id'];
-            $message = ["result" => $guest_data, "message" => 'Signup successfully completed', "status" => true, "code" => 0];
+            $message = ["result" => $user_data, "message" => $message, "status" => true, "code" => 0];
             return response()->json($message, 200);
         } catch (Exception $e) {
             echo 'Message: ' . $e->getMessage();

@@ -89,8 +89,11 @@ class UserController extends APIController
         unset($request_data['device_type']);
         unset($request_data['device_token']);
         $code = 0;
-        $user_data = User::where('u_email', trim($request->u_email))->where('u_status', 1)->first();
-
+        $user_data = User::where('u_email', trim($request->u_email))
+        ->where('u_status', 1)
+        ->where('is_guest',0)
+        ->first();
+        
         if (!empty($user_data)) {
             $userdetail_data = $this->get_userdata($user_data);
 
@@ -113,33 +116,41 @@ class UserController extends APIController
                 if (empty($user_data)) {
                     $user_data = User::create($request_data);
                 }
-                //======check is already guest user =======
-                $guest_user_data = GuestUser::where('email', $request->u_email)->first();
-
-                if (!empty($user_data)) {
-                    $update_user = User::where('id', $$user_data->u_id)->update(['conversation_id' => $guest_user_data->conversation_id]);
-                }
+            
                 $successMessage = "Registration successfully completed";
                 $code = 0;
             }
         } else {
+            
             $user_data = array();
+            $guest_user_data = User::where('u_email',$request_data['u_email'])
+            ->where('is_guest',1)
+            ->first();
+           
+            if(!empty($guest_user_data))
+            {
+                $request_data['is_guest'] = 0;
+                $user_data = User::where('u_email', trim($request->u_email))->update($request_data);
+            }else{
+               
 
-            if ($request->u_user_type == 1) {
-                $user_data = User::create($request_data);
-            } else if ($request->u_user_type != 1) {
-                $user_data = User::where('u_social_id', trim($request->u_social_id))
-                    ->where('u_user_type', $request->u_user_type)
-                    ->where('u_status', 1)
-                    ->first();
-
-                if (empty($user_data)) {
+                if ($request->u_user_type == 1) {
                     $user_data = User::create($request_data);
+                } else if ($request->u_user_type != 1) {
+                    $user_data = User::where('u_social_id', trim($request->u_social_id))
+                        ->where('u_user_type', $request->u_user_type)
+                        ->where('u_status', 1)
+                        ->first();
+    
+                    if (empty($user_data)) {
+                        $user_data = User::create($request_data);
+                    }
                 }
             }
+           
 
             $successMessage = "Registration successfully completed";
-
+           
             if (!empty($user_data)) {
                 if ($request->u_user_type == 1) {
                     $OTP = rand(1000, 9999);
@@ -177,22 +188,22 @@ class UserController extends APIController
                 $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
             }
             $guest_user_data = GuestUser::where('email', $request->u_email)->first();
-            if (!empty($guest_user_data)) {
+            // if (!empty($guest_user_data)) {
 
-                $user = DB::table('users')->where('u_id', $user_data->u_id)->first();
-                if ($user) {
-                    $conversation_id = $guest_user_data->conversation_id;
-                }else{
-                    $conversation_id = $this->conversation_id_generator();
-                }
-            }else{
-                $conversation_id = $this->conversation_id_generator();
-                $update_user = DB::table('users')
-                ->where('u_id', $user_data->u_id)
-                ->update(['conversation_id' =>  $conversation_id]);
-            }
+            //     $user = DB::table('users')->where('u_id', $user_data->u_id)->first();
+            //     if ($user) {
+            //         $conversation_id = $guest_user_data->conversation_id;
+            //     }else{
+            //         $conversation_id = $this->conversation_id_generator();
+            //     }
+            // }else{
+            //     $conversation_id = $this->conversation_id_generator();
+            //     $update_user = DB::table('users')
+            //     ->where('u_id', $user_data->u_id)
+            //     ->update(['conversation_id' =>  $conversation_id]);
+            // }
 
-            $userdetail_data->conversation_id =  $conversation_id;
+            // $userdetail_data->conversation_id =  $conversation_id;
 
             $message = ["result" => $userdetail_data, "message" => $successMessage, "status" => true, "code" => $code];
         } else {
@@ -277,7 +288,7 @@ class UserController extends APIController
 
                 $message = ["result" => $userdetail_data, "message" => $successMessage, "status" => true, "code" => 0];
             } else {
-                $message = ["result" => (object) array(), "message" => "Invalid Email Or Password", "status" => false, "code" => 0];
+                $message = ["result" => (object) array(), "message" => "Invalid email Or Password", "status" => false, "code" => 0];
             }
 
             return response()->json($message, 200);
