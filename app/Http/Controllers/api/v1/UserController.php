@@ -131,6 +131,8 @@ class UserController extends APIController
             {
                 $request_data['is_guest'] = 0;
                 $user_data = User::where('u_email', trim($request->u_email))->update($request_data);
+                $user_data =  $guest_user_data;
+                
             }else{
                
 
