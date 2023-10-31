@@ -1760,6 +1760,16 @@ class UserController extends APIController
                 }
             }
         }
+        $guest_list = [];
+        if (!empty($request->guestIds) && is_array($request->guestIds) && count($request->guestIds) > 0) {
+            foreach ($request->guestIds as $id) {
+                $user = $this->userModel->validateUser($id);
+                if (!empty($user)) {
+                    $userdetail_data = $this->get_userdata($user, $login_user_id);
+                    $guest_list[] = (array) $userdetail_data;
+                }
+            }
+        }
 
         $group_list = [];
         if (!empty($request->groupIds) && is_array($request->groupIds) && count($request->groupIds) > 0) {
@@ -1811,7 +1821,7 @@ class UserController extends APIController
         $response['userList'] = $user_list;
         $response['groupList'] = $group_list;
         $response['corList'] = $cor_list;
-
+        $response['guestList'] = $guest_list;
 
         return $this->respondResult($response, '', true, 200);
     }
