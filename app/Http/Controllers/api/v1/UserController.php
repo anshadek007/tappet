@@ -186,9 +186,9 @@ class UserController extends APIController
         if (!empty($user_data)) {
             $userdetail_data = $this->get_userdata($user_data);
 
-            if ($request->u_user_type != 1) {
+            // if ($request->u_user_type != 1) {
                 $userdetail_data->token = $user_data->createToken("app_user")->accessToken;
-            }
+            // }
             $guest_user_data = GuestUser::where('email', $request->u_email)->first();
             // if (!empty($guest_user_data)) {
 
