@@ -155,7 +155,8 @@ class UserController extends APIController
            
             if (!empty($user_data)) {
                 if ($request->u_user_type == 1) {
-                    $OTP = rand(1000, 9999);
+                    // $OTP = rand(1000, 9999);
+                    $OTP = 1234;
 
                     $user_email = $request->u_email;
                     try {
@@ -856,23 +857,23 @@ class UserController extends APIController
 
             // $OTP = rand(1000, 9999);
             $OTP = 1234;
-            $user_email = $request->u_email;
-            try {
-                $email = array($user_email);
-                $data = array(
-                    'name' => $user_data->u_first_name . ' ' . $user_data->u_last_name,
-                    'otp' => $OTP,
-                );
+            // $user_email = $request->u_email;
+            // try {
+            //     $email = array($user_email);
+            //     $data = array(
+            //         'name' => $user_data->u_first_name . ' ' . $user_data->u_last_name,
+            //         'otp' => $OTP,
+            //     );
 
-                Mail::send('emails.send_forgot_password_otp_in_email', $data, function ($message) use ($email) {
-                    $message->from(env("MAIL_USERNAME"), config('app.name'));
-                    $message->to($email);
-                    $message->subject(config('app.name') . " : Forgot password mail");
-                });
-            } catch (\Exception $e) {
-                //                return $this->respondWithError($e->getMessage());
-                return $this->respondWithError("Failed: Problem while sending mail, try again!");
-            }
+            //     Mail::send('emails.send_forgot_password_otp_in_email', $data, function ($message) use ($email) {
+            //         $message->from(env("MAIL_USERNAME"), config('app.name'));
+            //         $message->to($email);
+            //         $message->subject(config('app.name') . " : Forgot password mail");
+            //     });
+            // } catch (\Exception $e) {
+            //     //                return $this->respondWithError($e->getMessage());
+            //     return $this->respondWithError("Failed: Problem while sending mail, try again!");
+            // }
 
             $user_data->u_otp = $OTP;
             $user_data->update();
@@ -1041,7 +1042,7 @@ class UserController extends APIController
 
         $userdetail_data = new \stdClass();
         $userdetail_data->u_id = $user_data->u_id;
-        $userdetail_data->conversation_id = $user_data->conversation_id;
+       
         $userdetail_data->u_first_name = !empty($user_data->u_first_name) ? $user_data->u_first_name : "";
         $userdetail_data->u_last_name = !empty($user_data->u_last_name) ? $user_data->u_last_name : "";
         $userdetail_data->u_email = !empty($user_data->u_email) ? $user_data->u_email : "";
