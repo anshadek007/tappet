@@ -24,7 +24,7 @@ use App\UserDeviceToken;
 
 
 class PetsController extends APIController {
-    use ConversationIdGenerator;
+   
     protected $userModel;
     protected $week_list;
 
