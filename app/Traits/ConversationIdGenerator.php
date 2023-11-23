@@ -36,7 +36,7 @@ class ConversationIdGenerator
     }
 
 
-public function zego_key($serverSecret,$appId,$user_id){
+public function zego_key($serverSecret,$appId,$user_id,$remainTimeInSecond){
 
     
 
@@ -70,8 +70,9 @@ $rtcRoomPayLoad = [
 
 $payload = json_encode($rtcRoomPayLoad);
 
+
 // 3600 is the token expiration time, in seconds
-$token = ZegoServerAssistant::generateToken04($appId, $userId, $serverSecret, 3600, $payload);
+$token = ZegoServerAssistant::generateToken04($appId, $userId, $serverSecret, $remainTimeInSecond, $payload);
 if( $token->code == ZegoErrorCodes::success ){
   #...
 }
