@@ -36,7 +36,7 @@ class ConversationIdGenerator
     }
 
 
-public function zego_key($serverSecret,$appId){
+public function zego_key($serverSecret,$appId,$user_id){
 
     
 
@@ -55,7 +55,7 @@ $appId = $appId;
 $serverSecret = $serverSecret;
 
 // Please modify userId to the user's userId
-$userId = 'user1';
+$userId = $user_id;
 
 $roomId = "room1";
 

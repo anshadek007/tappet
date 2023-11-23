@@ -59,8 +59,9 @@ class GuestController extends Controller
                 $user_data['token'] = $token;
                 $message = "User login successfully";
             }
+            $user_id = 'zegouser_'.$user_data->u_id;
             $zego = new zego;
-            $zego_key = $zego->zego_key($request->server_secret,$request->app_id);
+            $zego_key = $zego->zego_key($request->server_secret,$request->app_id,$user_id);
             $user_data['zego_token'] =  $zego_key;
             $message = ["result" => $user_data, "message" => $message, "status" => true, "code" => 0];
             return response()->json($message, 200);
