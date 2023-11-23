@@ -5,18 +5,18 @@ namespace App\Http\Controllers\api\v1;
 use App\GuestUser;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Traits\ConversationIdGenerator;
+
 use App\User;
 use App\UserDeviceToken;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\TokenRepository;
 use Validator;
 use Exception;
-
+use App\Traits\ConversationIdGenerator as zego;
 
 class GuestController extends Controller
 {
-    use ConversationIdGenerator;
+  
 
 
     protected function validator(array $data)
@@ -59,6 +59,9 @@ class GuestController extends Controller
                 $user_data['token'] = $token;
                 $message = "User login successfully";
             }
+            $zego = new zego;
+            $zego_key = $zego->zego_key($request->server_secret,$request->app_id);
+            $user_data['zego_token'] =  $zego_key;
             $message = ["result" => $user_data, "message" => $message, "status" => true, "code" => 0];
             return response()->json($message, 200);
         } catch (Exception $e) {

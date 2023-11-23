@@ -28,10 +28,11 @@ use App\GuestUser;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Lcobucci\JWT\Builder;
-use App\Traits\ConversationIdGenerator;
+use App\Traits\ConversationIdGenerator as zego;
 class UserController extends APIController
 {
-    use ConversationIdGenerator;
+ 
+   
     protected $userModel;
 
     public function __construct(Request $request)
@@ -218,6 +219,7 @@ class UserController extends APIController
 
     public function login(Request $request)
     {
+        
         try {
 
 
