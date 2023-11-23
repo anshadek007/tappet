@@ -60,7 +60,7 @@ class GuestController extends Controller
                 $message = "User login successfully";
             }
             $user_id = 'zegouser_'.$user_data->u_id;
-            $remainTimeInSecond = 3600 * 24;
+            $remainTimeInSecond = 3600;
             $zego = new zego;
             $zego_key = $zego->zego_key($request->server_secret,$request->app_id,$user_id,$remainTimeInSecond);
             $user_data['zego_token'] =  $zego_key;
